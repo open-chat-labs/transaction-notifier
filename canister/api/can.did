@@ -1,0 +1,22 @@
+type CanisterId = principal;
+type AccountIdentifier = blob;
+
+type SubscribeArgs =
+    record {
+        subscriptions: vec Subscription;
+    };
+
+type SubscribeResponse =
+    variant {
+        Success;
+    };
+
+type Subscription =
+    record {
+        account_identifier: AccountIdentifier;
+        canister_ids: vec CanisterId;
+    };
+
+service : {
+    subscribe: (SubscribeArgs) -> (SubscribeResponse);
+}
