@@ -1,4 +1,5 @@
 use crate::env::Environment;
+use crate::model::subscriptions::Subscriptions;
 use candid::Principal;
 use canister_logger::LogMessagesWrapper;
 use canister_state_macros::canister_state;
@@ -9,6 +10,8 @@ use types::{CanisterId, Timestamped, Version};
 
 mod env;
 mod lifecycle;
+mod model;
+mod updates;
 
 thread_local! {
     static LOG_MESSAGES: RefCell<LogMessagesWrapper> = RefCell::default();
@@ -32,6 +35,7 @@ impl State {
 struct Data {
     ledger_canister_id: CanisterId,
     admins: HashSet<Principal>,
+    subscriptions: Subscriptions,
     test_mode: bool,
 }
 
@@ -44,6 +48,7 @@ impl Data {
         Data {
             ledger_canister_id,
             admins,
+            subscriptions: Subscriptions::default(),
             test_mode,
         }
     }
