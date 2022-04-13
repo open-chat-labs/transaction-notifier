@@ -18,6 +18,7 @@ futures = "0.3.16"
 ic-cdk = "0.5.0"
 ic-cdk-macros = "0.5.0"
 ic-ledger-types = "0.1.1"
+itertools = "0.10.3"
 serde = "1.0.136"
 serde_bytes = "0.11.5"
 stable_memory = { git = "https://github.com/open-ic/ic-utils", rev = "c7aa6b402a41b2cf5e67903055f2b809b68469c6" }

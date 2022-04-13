@@ -1,4 +1,6 @@
 use crate::env::Environment;
+use crate::model::ledger_sync_state::LedgerSyncState;
+use crate::model::notifications_queue::NotificationsQueue;
 use crate::model::subscriptions::Subscriptions;
 use candid::Principal;
 use canister_logger::LogMessagesWrapper;
@@ -36,6 +38,8 @@ struct Data {
     ledger_canister_id: CanisterId,
     admins: HashSet<Principal>,
     subscriptions: Subscriptions,
+    notifications_queue: NotificationsQueue,
+    ledger_sync_state: LedgerSyncState,
     test_mode: bool,
 }
 
@@ -49,6 +53,8 @@ impl Data {
             ledger_canister_id,
             admins,
             subscriptions: Subscriptions::default(),
+            notifications_queue: NotificationsQueue::default(),
+            ledger_sync_state: LedgerSyncState::default(),
             test_mode,
         }
     }

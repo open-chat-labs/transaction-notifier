@@ -2,6 +2,7 @@ use crate::env::Environment;
 use crate::{init_state as set_state, Data, State, LOG_MESSAGES, WASM_VERSION};
 use types::{Timestamped, Version};
 
+mod heartbeat;
 mod init;
 mod post_upgrade;
 mod pre_upgrade;
