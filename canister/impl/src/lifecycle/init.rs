@@ -15,6 +15,7 @@ fn init(args: Args) {
     let env = Box::new(CanisterEnv::default());
 
     let data = Data::new(
+        args.token_symbol,
         args.ledger_canister_id,
         args.admins.into_iter().collect(),
         args.notification_method_name

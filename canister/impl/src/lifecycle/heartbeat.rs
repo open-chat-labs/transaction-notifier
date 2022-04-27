@@ -153,6 +153,7 @@ mod push_notifications {
 
     struct Batch {
         notifications: Vec<Notification>,
+        token_symbol: String,
         method_name: String,
     }
 
@@ -168,6 +169,7 @@ mod push_notifications {
 
             Some(Batch {
                 notifications,
+                token_symbol: state.data.token_symbol.clone(),
                 method_name: state.data.notification_method_name.clone(),
             })
         } else {
@@ -180,13 +182,14 @@ mod push_notifications {
         let futures: Vec<_> = batch
             .notifications
             .into_iter()
-            .map(|n| push(n, method_name))
+            .map(|n| push(n, batch.token_symbol.clone(), method_name))
             .collect();
         futures::future::join_all(futures).await;
     }
 
-    async fn push(notification: Notification, method_name: &str) {
+    async fn push(notification: Notification, token_symbol: String, method_name: &str) {
         let args = NotifyTransactionArgs {
+            token_symbol,
             block_index: notification.block_index,
             block: notification.block,
         };

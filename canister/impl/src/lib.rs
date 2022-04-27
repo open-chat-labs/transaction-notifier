@@ -36,6 +36,7 @@ impl State {
 
 #[derive(Serialize, Deserialize)]
 struct Data {
+    token_symbol: String,
     ledger_canister_id: CanisterId,
     admins: HashSet<Principal>,
     notification_method_name: String,
@@ -47,12 +48,14 @@ struct Data {
 
 impl Data {
     pub fn new(
+        token_symbol: String,
         ledger_canister_id: CanisterId,
         admins: HashSet<Principal>,
         notification_method_name: String,
         test_mode: bool,
     ) -> Data {
         Data {
+            token_symbol,
             ledger_canister_id,
             admins,
             notification_method_name,
@@ -66,6 +69,7 @@ impl Data {
 
 #[derive(CandidType, Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 pub struct NotifyTransactionArgs {
+    pub token_symbol: String,
     pub block_index: BlockIndex,
     pub block: Block,
 }
