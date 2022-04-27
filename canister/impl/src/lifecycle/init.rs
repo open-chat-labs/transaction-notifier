@@ -17,6 +17,8 @@ fn init(args: Args) {
     let data = Data::new(
         args.ledger_canister_id,
         args.admins.into_iter().collect(),
+        args.notification_method_name
+            .unwrap_or("notify_transaction".to_string()),
         args.test_mode,
     );
 

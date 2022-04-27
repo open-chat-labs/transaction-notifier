@@ -16,6 +16,10 @@ impl NotificationsQueue {
     pub fn take(&mut self) -> Option<Notification> {
         self.queue.pop_front()
     }
+
+    pub fn is_empty(&mut self) -> bool {
+        self.queue.is_empty()
+    }
 }
 
 #[derive(Serialize, Deserialize)]

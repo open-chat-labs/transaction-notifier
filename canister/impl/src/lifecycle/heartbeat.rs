@@ -1,3 +1,4 @@
+use crate::model::notifications_queue::Notification;
 use crate::{mutate_state, read_state, State};
 use ic_cdk::api::call::CallResult;
 use ic_cdk_macros::heartbeat;
@@ -5,19 +6,19 @@ use ic_ledger_types::{
     AccountIdentifier, ArchivedBlocksRange, Block, BlockIndex, GetBlocksArgs, GetBlocksResult,
     Operation,
 };
+use itertools::Itertools;
+use std::collections::HashSet;
 use tracing::error;
 use types::CanisterId;
 
 #[heartbeat]
 fn heartbeat() {
     sync_ledger_transactions::run();
+    push_notifications::run();
 }
 
 mod sync_ledger_transactions {
     use super::*;
-    use crate::model::notifications_queue::Notification;
-    use itertools::Itertools;
-    use std::collections::HashSet;
 
     pub fn run() {
         if let Some(block_index_synced_up_to) = mutate_state(|state| {
@@ -135,5 +136,64 @@ mod sync_ledger_transactions {
                 .flatten()
                 .copied(),
         )
+    }
+}
+
+mod push_notifications {
+    use super::*;
+    use crate::NotifyTransactionArgs;
+
+    const MAX_NOTIFICATIONS_PER_BATCH: usize = 5;
+
+    pub fn run() {
+        if let Some(batch) = mutate_state(next_batch) {
+            ic_cdk::spawn(push_batch(batch));
+        }
+    }
+
+    struct Batch {
+        notifications: Vec<Notification>,
+        method_name: String,
+    }
+
+    fn next_batch(state: &mut State) -> Option<Batch> {
+        if !state.data.notifications_queue.is_empty() {
+            let mut notifications = Vec::new();
+            while let Some(notification) = state.data.notifications_queue.take() {
+                notifications.push(notification);
+                if notifications.len() == MAX_NOTIFICATIONS_PER_BATCH {
+                    break;
+                }
+            }
+
+            Some(Batch {
+                notifications,
+                method_name: state.data.notification_method_name.clone(),
+            })
+        } else {
+            None
+        }
+    }
+
+    async fn push_batch(batch: Batch) {
+        let method_name = &batch.method_name;
+        let futures: Vec<_> = batch
+            .notifications
+            .into_iter()
+            .map(|n| push(n, method_name))
+            .collect();
+        futures::future::join_all(futures).await;
+    }
+
+    async fn push(notification: Notification, method_name: &str) {
+        let args = NotifyTransactionArgs {
+            block_index: notification.block_index,
+            block: notification.block,
+        };
+        let response: CallResult<()> =
+            ic_cdk::call(notification.canister_id, method_name, (args,)).await;
+        if let Err(error) = response {
+            // TODO handle this
+        }
     }
 }
