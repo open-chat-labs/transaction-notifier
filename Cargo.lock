@@ -169,15 +169,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "canister_api_macros"
-version = "0.1.0"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn",
-]
-
-[[package]]
 name = "canister_logger"
 version = "0.1.0"
 dependencies = [
@@ -192,7 +183,17 @@ dependencies = [
 [[package]]
 name = "canister_state_macros"
 version = "0.1.0"
-source = "git+https://github.com/open-ic/ic-utils?rev=c7aa6b402a41b2cf5e67903055f2b809b68469c6#c7aa6b402a41b2cf5e67903055f2b809b68469c6"
+source = "git+https://github.com/open-ic/ic-utils?rev=9d0fd52de49ab46b9b51c2b76b9b0477e3199a4e#9d0fd52de49ab46b9b51c2b76b9b0477e3199a4e"
+
+[[package]]
+name = "canister_tracing_macros"
+version = "0.1.0"
+source = "git+https://github.com/open-ic/ic-utils?rev=9d0fd52de49ab46b9b51c2b76b9b0477e3199a4e#9d0fd52de49ab46b9b51c2b76b9b0477e3199a4e"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+]
 
 [[package]]
 name = "cfg-if"
@@ -955,7 +956,7 @@ checksum = "f2dd574626839106c320a323308629dcb1acfc96e32a8cba364ddc61ac23ee83"
 [[package]]
 name = "stable_memory"
 version = "0.1.0"
-source = "git+https://github.com/open-ic/ic-utils?rev=c7aa6b402a41b2cf5e67903055f2b809b68469c6#c7aa6b402a41b2cf5e67903055f2b809b68469c6"
+source = "git+https://github.com/open-ic/ic-utils?rev=9d0fd52de49ab46b9b51c2b76b9b0477e3199a4e#9d0fd52de49ab46b9b51c2b76b9b0477e3199a4e"
 dependencies = [
  "ic-cdk",
  "rmp-serde",
@@ -1140,9 +1141,9 @@ name = "transaction_notifier_impl"
 version = "0.1.0"
 dependencies = [
  "candid",
- "canister_api_macros",
  "canister_logger",
  "canister_state_macros",
+ "canister_tracing_macros",
  "futures",
  "ic-cdk",
  "ic-cdk-macros",

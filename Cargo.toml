@@ -2,7 +2,6 @@
 members = [
     "canister/api",
     "canister/impl",
-    "libraries/canister_api_macros",
     "libraries/canister_logger",
     "libraries/types",
 ]

@@ -1,5 +1,5 @@
 use crate::{mutate_state, State};
-use canister_api_macros::trace;
+use canister_tracing_macros::trace;
 use ic_cdk_macros::update;
 use transaction_notifier::subscribe::{Response::*, *};
 
