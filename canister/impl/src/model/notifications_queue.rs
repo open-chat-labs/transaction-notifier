@@ -1,4 +1,4 @@
-use ic_ledger_types::{Block, BlockIndex};
+use crate::NotifyTransactionArgs;
 use serde::{Deserialize, Serialize};
 use std::collections::VecDeque;
 use types::CanisterId;
@@ -17,7 +17,7 @@ impl NotificationsQueue {
         self.queue.pop_front()
     }
 
-    pub fn is_empty(&mut self) -> bool {
+    pub fn is_empty(&self) -> bool {
         self.queue.is_empty()
     }
 }
@@ -25,6 +25,5 @@ impl NotificationsQueue {
 #[derive(Serialize, Deserialize)]
 pub struct Notification {
     pub canister_id: CanisterId,
-    pub block_index: BlockIndex,
-    pub block: Block,
+    pub args: NotifyTransactionArgs,
 }

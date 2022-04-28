@@ -11,10 +11,13 @@ fn subscribe(args: Args) -> Response {
 
 fn subscribe_impl(args: Args, state: &mut State) -> Response {
     for subscription in args.subscriptions {
-        state
-            .data
-            .subscriptions
-            .add(subscription.account_identifier, subscription.canister_ids);
+        if let Some(token_data) = state.data.tokens.get_mut(&subscription.token_symbol) {
+            token_data
+                .subscriptions_mut()
+                .add(subscription.account_identifier, subscription.canister_ids);
+        } else {
+            panic!("Token not supported: {}", subscription.token_symbol);
+        }
     }
     Success
 }

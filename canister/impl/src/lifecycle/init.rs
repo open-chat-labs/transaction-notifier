@@ -15,11 +15,9 @@ fn init(args: Args) {
     let env = Box::new(CanisterEnv::default());
 
     let data = Data::new(
-        args.token_symbol,
-        args.ledger_canister_id,
         args.admins.into_iter().collect(),
         args.notification_method_name
-            .unwrap_or("notify_transaction".to_string()),
+            .unwrap_or_else(|| "notify_transaction".to_string()),
         args.test_mode,
     );
 

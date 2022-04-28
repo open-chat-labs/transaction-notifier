@@ -2,13 +2,14 @@ use crate::env::Environment;
 use crate::model::ledger_sync_state::LedgerSyncState;
 use crate::model::notifications_queue::NotificationsQueue;
 use crate::model::subscriptions::Subscriptions;
+use crate::model::token_data::TokenData;
 use candid::{CandidType, Principal};
 use canister_logger::LogMessagesWrapper;
 use canister_state_macros::canister_state;
 use ic_ledger_types::{Block, BlockIndex};
 use serde::{Deserialize, Serialize};
 use std::cell::RefCell;
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use types::{CanisterId, Timestamped, Version};
 
 mod env;
@@ -36,32 +37,24 @@ impl State {
 
 #[derive(Serialize, Deserialize)]
 struct Data {
-    token_symbol: String,
-    ledger_canister_id: CanisterId,
     admins: HashSet<Principal>,
     notification_method_name: String,
-    subscriptions: Subscriptions,
+    tokens: HashMap<String, TokenData>,
     notifications_queue: NotificationsQueue,
-    ledger_sync_state: LedgerSyncState,
     test_mode: bool,
 }
 
 impl Data {
     pub fn new(
-        token_symbol: String,
-        ledger_canister_id: CanisterId,
         admins: HashSet<Principal>,
         notification_method_name: String,
         test_mode: bool,
     ) -> Data {
         Data {
-            token_symbol,
-            ledger_canister_id,
             admins,
             notification_method_name,
-            subscriptions: Subscriptions::default(),
+            tokens: HashMap::default(),
             notifications_queue: NotificationsQueue::default(),
-            ledger_sync_state: LedgerSyncState::default(),
             test_mode,
         }
     }
@@ -70,6 +63,7 @@ impl Data {
 #[derive(CandidType, Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 pub struct NotifyTransactionArgs {
     pub token_symbol: String,
+    pub ledger: CanisterId,
     pub block_index: BlockIndex,
     pub block: Block,
 }
