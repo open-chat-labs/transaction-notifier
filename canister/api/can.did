@@ -1,5 +1,17 @@
-type CanisterId = principal;
 type AccountIdentifier = blob;
+type CanisterId = principal;
+
+type AddTokenArgs =
+    record {
+        ledger_canister_id: CanisterId;
+    };
+
+type AddTokenResponse =
+    variant {
+        Success;
+        AlreadyAdded;
+        LedgerError: text;
+    };
 
 type SubscribeArgs =
     record {
@@ -19,5 +31,6 @@ type Subscription =
     };
 
 service : {
+    add_token: (AddTokenArgs) -> (AddTokenResponse);
     subscribe: (SubscribeArgs) -> (SubscribeResponse);
 }

@@ -63,7 +63,7 @@ impl Data {
 #[derive(CandidType, Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 pub struct NotifyTransactionArgs {
     pub token_symbol: String,
-    pub ledger: CanisterId,
+    pub ledger_canister_id: CanisterId,
     pub block_index: BlockIndex,
     pub block: Block,
 }

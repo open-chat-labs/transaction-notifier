@@ -432,7 +432,7 @@ checksum = "7f24254aa9a54b5c858eaee2f5bccdb46aaf0e486a595ed5fd8f86ba55232a70"
 [[package]]
 name = "ic-cdk"
 version = "0.5.0"
-source = "git+https://github.com/hpeebles/cdk-rs?rev=506c0cf38a728318f99c692afc26452acd2236b8#506c0cf38a728318f99c692afc26452acd2236b8"
+source = "git+https://github.com/hpeebles/cdk-rs?rev=bdfc0a3ac3a5ad248558c0d9c5835a3c9f48a6e9#bdfc0a3ac3a5ad248558c0d9c5835a3c9f48a6e9"
 dependencies = [
  "candid",
  "cfg-if",
@@ -457,7 +457,7 @@ dependencies = [
 [[package]]
 name = "ic-ledger-types"
 version = "0.1.1"
-source = "git+https://github.com/hpeebles/cdk-rs?rev=506c0cf38a728318f99c692afc26452acd2236b8#506c0cf38a728318f99c692afc26452acd2236b8"
+source = "git+https://github.com/hpeebles/cdk-rs?rev=bdfc0a3ac3a5ad248558c0d9c5835a3c9f48a6e9#bdfc0a3ac3a5ad248558c0d9c5835a3c9f48a6e9"
 dependencies = [
  "candid",
  "crc32fast",

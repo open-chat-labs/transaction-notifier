@@ -23,8 +23,8 @@ mod sync_ledger_transactions {
 
     struct TokenToSync {
         token_symbol: String,
-        ledger: CanisterId,
-        block_index_synced_up_to: Option<BlockIndex>,
+        ledger_canister_id: CanisterId,
+        from_block: BlockIndex,
     }
 
     pub fn run() {
@@ -47,8 +47,8 @@ mod sync_ledger_transactions {
                 {
                     Some(TokenToSync {
                         token_symbol: t.token_symbol().to_string(),
-                        ledger: t.ledger(),
-                        block_index_synced_up_to,
+                        ledger_canister_id: t.ledger_canister_id(),
+                        from_block: block_index_synced_up_to + 1,
                     })
                 } else {
                     None
@@ -63,30 +63,27 @@ mod sync_ledger_transactions {
 
     async fn sync_token(token_to_sync: TokenToSync) {
         let mut new_block_index_synced_up_to = None;
-        if let Some(from_block_index) = token_to_sync.block_index_synced_up_to.map(|i| i + 1) {
-            match blocks_since(token_to_sync.ledger, from_block_index, 1000).await {
-                Ok(blocks) if !blocks.is_empty() => mutate_state(|state| {
-                    new_block_index_synced_up_to = Some(from_block_index - 1 + blocks.len() as u64);
-                    enqueue_notifications(
-                        &token_to_sync.token_symbol,
-                        token_to_sync.ledger,
-                        blocks,
-                        from_block_index,
-                        state,
-                    );
-                }),
-                Ok(_) => {}
-                Err(error) => error!(?error, "Failed to get blocks from ledger"),
-            }
-        } else {
-            match chain_length(token_to_sync.ledger).await {
-                Ok(chain_length) => {
-                    new_block_index_synced_up_to = Some(chain_length);
-                }
-                Err(error) => {
-                    error!(?error, "Failed to get chain length from ledger")
-                }
-            }
+        match blocks_since(
+            token_to_sync.ledger_canister_id,
+            token_to_sync.from_block,
+            1000,
+        )
+        .await
+        {
+            Ok(blocks) if !blocks.is_empty() => mutate_state(|state| {
+                new_block_index_synced_up_to =
+                    Some(token_to_sync.from_block + (blocks.len() as u64) - 1);
+
+                enqueue_notifications(
+                    &token_to_sync.token_symbol,
+                    token_to_sync.ledger_canister_id,
+                    blocks,
+                    token_to_sync.from_block,
+                    state,
+                );
+            }),
+            Ok(_) => {}
+            Err(error) => error!(?error, "Failed to get blocks from ledger"),
         }
 
         mutate_state(|state| {
@@ -96,18 +93,6 @@ mod sync_ledger_transactions {
                 state,
             )
         });
-    }
-
-    async fn chain_length(ledger_canister_id: CanisterId) -> CallResult<BlockIndex> {
-        ic_ledger_types::query_blocks(
-            ledger_canister_id,
-            GetBlocksArgs {
-                start: 0,
-                length: 0,
-            },
-        )
-        .await
-        .map(|res| res.chain_length)
     }
 
     async fn blocks_since(
@@ -174,7 +159,7 @@ mod sync_ledger_transactions {
 
     fn enqueue_notifications(
         token_symbol: &str,
-        ledger: CanisterId,
+        ledger_canister_id: CanisterId,
         blocks: Vec<Block>,
         from_block_index: BlockIndex,
         state: &mut State,
@@ -199,7 +184,7 @@ mod sync_ledger_transactions {
                         canister_id,
                         args: NotifyTransactionArgs {
                             token_symbol: token_symbol.to_string(),
-                            ledger,
+                            ledger_canister_id,
                             block_index,
                             block: block.clone(),
                         },
