@@ -15,6 +15,7 @@ use types::{CanisterId, Timestamped, Version};
 mod env;
 mod lifecycle;
 mod model;
+mod queries;
 mod updates;
 
 thread_local! {
