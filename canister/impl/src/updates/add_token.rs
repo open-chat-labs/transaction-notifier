@@ -1,3 +1,4 @@
+use crate::guards::caller_is_admin;
 use crate::{mutate_state, read_state, State, TokenData};
 use canister_tracing_macros::trace;
 use ic_cdk::api::call::CallResult;
@@ -7,7 +8,7 @@ use std::collections::hash_map::Entry::Vacant;
 use transaction_notifier::add_token::{Response::*, *};
 use types::CanisterId;
 
-#[update]
+#[update(guard = "caller_is_admin")]
 #[trace]
 async fn add_token(args: Args) -> Response {
     if read_state(|state| {

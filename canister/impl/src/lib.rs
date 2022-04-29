@@ -13,6 +13,7 @@ use std::collections::{HashMap, HashSet};
 use types::{CanisterId, Timestamped, Version};
 
 mod env;
+mod guards;
 mod lifecycle;
 mod model;
 mod queries;
