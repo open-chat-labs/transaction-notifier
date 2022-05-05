@@ -7,6 +7,8 @@ pub struct LedgerSyncState {
     in_progress: bool,
     synced_up_to: BlockIndex,
     last_sync_started_at: TimestampMillis,
+    last_successful_sync: TimestampMillis,
+    last_failed_sync: TimestampMillis,
 }
 
 impl LedgerSyncState {
@@ -15,6 +17,8 @@ impl LedgerSyncState {
             in_progress: false,
             synced_up_to: latest_block_index,
             last_sync_started_at: 0,
+            last_successful_sync: 0,
+            last_failed_sync: 0,
         }
     }
 
@@ -28,8 +32,14 @@ impl LedgerSyncState {
         }
     }
 
-    pub fn mark_sync_complete(&mut self) {
+    pub fn mark_sync_complete(&mut self, success: bool, now: TimestampMillis) {
         self.in_progress = false;
+
+        if success {
+            self.last_successful_sync = now;
+        } else {
+            self.last_failed_sync = now;
+        }
     }
 
     pub fn synced_up_to(&self) -> BlockIndex {
@@ -42,6 +52,14 @@ impl LedgerSyncState {
 
     pub fn last_sync_started_at(&self) -> TimestampMillis {
         self.last_sync_started_at
+    }
+
+    pub fn last_successful_sync(&self) -> TimestampMillis {
+        self.last_successful_sync
+    }
+
+    pub fn last_failed_sync(&self) -> TimestampMillis {
+        self.last_failed_sync
     }
 }
 

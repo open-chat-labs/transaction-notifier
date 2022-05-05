@@ -1,5 +1,5 @@
 use crate::model::ledger_sync_state::TryStartSyncResult;
-use crate::model::notifications_queue::Notification;
+use crate::model::notifications::Notification;
 use crate::{mutate_state, NotifyTransactionArgs, State, Subscriptions};
 use ic_cdk::api::call::CallResult;
 use ic_cdk_macros::heartbeat;
@@ -63,6 +63,8 @@ mod sync_ledger_transactions {
 
     async fn sync_token(token_to_sync: TokenToSync) {
         let mut new_block_index_synced_up_to = None;
+        let mut success = false;
+
         match blocks_since(
             token_to_sync.ledger_canister_id,
             token_to_sync.from_block,
@@ -70,19 +72,23 @@ mod sync_ledger_transactions {
         )
         .await
         {
-            Ok(blocks) if !blocks.is_empty() => mutate_state(|state| {
-                new_block_index_synced_up_to =
-                    Some(token_to_sync.from_block + (blocks.len() as u64) - 1);
+            Ok(blocks) => {
+                if !blocks.is_empty() {
+                    mutate_state(|state| {
+                        new_block_index_synced_up_to =
+                            Some(token_to_sync.from_block + (blocks.len() as u64) - 1);
 
-                enqueue_notifications(
-                    &token_to_sync.token_symbol,
-                    token_to_sync.ledger_canister_id,
-                    blocks,
-                    token_to_sync.from_block,
-                    state,
-                );
-            }),
-            Ok(_) => {}
+                        enqueue_notifications(
+                            &token_to_sync.token_symbol,
+                            token_to_sync.ledger_canister_id,
+                            blocks,
+                            token_to_sync.from_block,
+                            state,
+                        );
+                    });
+                }
+                success = true;
+            }
             Err(error) => error!(?error, "Failed to get blocks from ledger"),
         }
 
@@ -90,6 +96,7 @@ mod sync_ledger_transactions {
             mark_sync_complete(
                 &token_to_sync.token_symbol,
                 new_block_index_synced_up_to,
+                success,
                 state,
             )
         });
@@ -145,6 +152,7 @@ mod sync_ledger_transactions {
     fn mark_sync_complete(
         token_symbol: &str,
         new_block_index_synced_up_to: Option<BlockIndex>,
+        success: bool,
         state: &mut State,
     ) {
         if let Some(token_data) = state.data.tokens.get_mut(token_symbol) {
@@ -153,7 +161,8 @@ mod sync_ledger_transactions {
             if let Some(block_index) = new_block_index_synced_up_to {
                 ledger_sync_state.set_synced_up_to(block_index);
             }
-            ledger_sync_state.mark_sync_complete();
+
+            ledger_sync_state.mark_sync_complete(success, state.env.now());
         }
     }
 
@@ -180,7 +189,7 @@ mod sync_ledger_transactions {
                     extract_canisters_to_notify(&account_identifiers, subscriptions);
 
                 for canister_id in canisters_to_notify {
-                    state.data.notifications_queue.add(Notification {
+                    state.data.notifications.enqueue(Notification {
                         canister_id,
                         args: NotifyTransactionArgs {
                             token_symbol: token_symbol.to_string(),
@@ -218,6 +227,7 @@ mod sync_ledger_transactions {
 
 mod push_notifications {
     use super::*;
+    use std::cmp::min;
 
     const MAX_NOTIFICATIONS_PER_BATCH: usize = 5;
 
@@ -233,9 +243,13 @@ mod push_notifications {
     }
 
     fn next_batch(state: &mut State) -> Option<Batch> {
-        if !state.data.notifications_queue.is_empty() {
-            let mut notifications = Vec::new();
-            while let Some(notification) = state.data.notifications_queue.take() {
+        if !state.data.notifications.is_queue_empty() {
+            let mut notifications = Vec::with_capacity(min(
+                state.data.notifications.queue_len(),
+                MAX_NOTIFICATIONS_PER_BATCH,
+            ));
+
+            while let Some(notification) = state.data.notifications.dequeue() {
                 notifications.push(notification);
                 if notifications.len() == MAX_NOTIFICATIONS_PER_BATCH {
                     break;
@@ -266,8 +280,11 @@ mod push_notifications {
         let response: CallResult<()> =
             ic_cdk::call(notification.canister_id, method_name, (notification.args,)).await;
 
-        if let Err(error) = response {
-            // TODO handle this
+        match response {
+            Ok(_) => mutate_state(|state| state.data.notifications.mark_sent()),
+            Err(_error) => {
+                // TODO handle this
+            }
         }
     }
 }

@@ -19,4 +19,8 @@ impl Subscriptions {
             canisters_subscribed.insert(canister_id);
         }
     }
+
+    pub fn len(&self) -> usize {
+        self.subscriptions.len()
+    }
 }
