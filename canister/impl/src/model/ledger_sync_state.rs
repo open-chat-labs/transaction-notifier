@@ -4,6 +4,7 @@ use types::TimestampMillis;
 
 #[derive(Serialize, Deserialize)]
 pub struct LedgerSyncState {
+    enabled: bool,
     in_progress: bool,
     synced_up_to: BlockIndex,
     last_sync_started_at: TimestampMillis,
@@ -14,6 +15,7 @@ pub struct LedgerSyncState {
 impl LedgerSyncState {
     pub fn new(latest_block_index: BlockIndex) -> LedgerSyncState {
         LedgerSyncState {
+            enabled: false,
             in_progress: false,
             synced_up_to: latest_block_index,
             last_sync_started_at: 0,
@@ -22,8 +24,22 @@ impl LedgerSyncState {
         }
     }
 
+    pub fn enable(&mut self) {
+        self.enabled = true;
+    }
+
+    pub fn disable(&mut self) {
+        self.enabled = false;
+    }
+
+    pub fn enabled(&self) -> bool {
+        self.enabled
+    }
+
     pub fn try_start(&mut self, now: TimestampMillis) -> TryStartSyncResult {
-        if !self.in_progress {
+        if !self.enabled {
+            TryStartSyncResult::Disabled
+        } else if !self.in_progress {
             self.in_progress = true;
             self.last_sync_started_at = now;
             TryStartSyncResult::Success(self.synced_up_to)
@@ -66,4 +82,5 @@ impl LedgerSyncState {
 pub enum TryStartSyncResult {
     Success(BlockIndex),
     AlreadyInProgress,
+    Disabled,
 }

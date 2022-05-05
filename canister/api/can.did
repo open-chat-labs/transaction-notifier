@@ -1,9 +1,12 @@
 type AccountIdentifier = blob;
+type BlockIndex = nat64;
 type CanisterId = principal;
 
 type AddTokenArgs =
     record {
         ledger_canister_id: CanisterId;
+        enable_sync: bool;
+        sync_from_block_index: opt BlockIndex;
     };
 
 type AddTokenResponse =

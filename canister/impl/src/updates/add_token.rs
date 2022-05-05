@@ -21,17 +21,19 @@ async fn add_token(args: Args) -> Response {
         AlreadyAdded
     } else {
         let token_symbol_future = token_symbol(args.ledger_canister_id);
-        let block_index_future = latest_block_index(args.ledger_canister_id);
+        let block_index_future =
+            sync_from_block_index(args.ledger_canister_id, args.sync_from_block_index);
 
-        let (token_symbol_res, latest_block_index_res) =
+        let (token_symbol_res, block_index_res) =
             futures::future::join(token_symbol_future, block_index_future).await;
 
-        match (token_symbol_res, latest_block_index_res) {
-            (Ok(token_symbol), Ok(latest_block_index)) => mutate_state(|state| {
+        match (token_symbol_res, block_index_res) {
+            (Ok(token_symbol), Ok(block_index)) => mutate_state(|state| {
                 add_token_impl(
                     token_symbol,
                     args.ledger_canister_id,
-                    latest_block_index,
+                    block_index,
+                    args.enable_sync,
                     state,
                 )
             }),
@@ -43,16 +45,20 @@ async fn add_token(args: Args) -> Response {
 fn add_token_impl(
     token_symbol: String,
     ledger_canister_id: CanisterId,
-    latest_block_index: BlockIndex,
+    sync_from_block_index: BlockIndex,
+    enable_sync: bool,
     state: &mut State,
 ) -> Response {
     match state.data.tokens.entry(token_symbol.clone()) {
         Vacant(e) => {
-            e.insert(TokenData::new(
+            let token_data = e.insert(TokenData::new(
                 token_symbol,
                 ledger_canister_id,
-                latest_block_index,
+                sync_from_block_index,
             ));
+            if enable_sync {
+                token_data.ledger_sync_state_mut().enable();
+            }
             Success
         }
         _ => AlreadyAdded,
@@ -65,14 +71,21 @@ async fn token_symbol(ledger_canister_id: CanisterId) -> CallResult<String> {
         .map(|res| res.symbol)
 }
 
-async fn latest_block_index(ledger_canister_id: CanisterId) -> CallResult<BlockIndex> {
-    ic_ledger_types::query_blocks(
-        ledger_canister_id,
-        GetBlocksArgs {
-            start: 0,
-            length: 0,
-        },
-    )
-    .await
-    .map(|res| res.chain_length)
+async fn sync_from_block_index(
+    ledger_canister_id: CanisterId,
+    block_index_override: Option<BlockIndex>,
+) -> CallResult<BlockIndex> {
+    if let Some(block_index) = block_index_override {
+        Ok(block_index)
+    } else {
+        ic_ledger_types::query_blocks(
+            ledger_canister_id,
+            GetBlocksArgs {
+                start: 0,
+                length: 0,
+            },
+        )
+        .await
+        .map(|res| res.chain_length)
+    }
 }
