@@ -1,4 +1,5 @@
 use crate::model::ledger_sync_state::TryStartSyncResult;
+use crate::model::ledger_sync_state::Version;
 use crate::model::notifications::Notification;
 use crate::{mutate_state, NotifyTransactionArgs, State, Subscriptions};
 use ic_cdk::api::call::CallResult;
@@ -25,6 +26,7 @@ mod sync_ledger_transactions {
         token_symbol: String,
         ledger_canister_id: CanisterId,
         from_block: BlockIndex,
+        version: Version,
     }
 
     pub fn run() {
@@ -42,13 +44,14 @@ mod sync_ledger_transactions {
             .tokens
             .values_mut()
             .filter_map(|t| {
-                if let TryStartSyncResult::Success(block_index_synced_up_to) =
+                if let TryStartSyncResult::Success(block_index_synced_up_to, version) =
                     t.ledger_sync_state_mut().try_start(now)
                 {
                     Some(TokenToSync {
                         token_symbol: t.token_symbol().to_string(),
                         ledger_canister_id: t.ledger_canister_id(),
                         from_block: block_index_synced_up_to + 1,
+                        version,
                     })
                 } else {
                     None
@@ -97,6 +100,7 @@ mod sync_ledger_transactions {
                 &token_to_sync.token_symbol,
                 new_block_index_synced_up_to,
                 success,
+                token_to_sync.version,
                 state,
             )
         });
@@ -153,13 +157,14 @@ mod sync_ledger_transactions {
         token_symbol: &str,
         new_block_index_synced_up_to: Option<BlockIndex>,
         success: bool,
+        version: Version,
         state: &mut State,
     ) {
         if let Some(token_data) = state.data.tokens.get_mut(token_symbol) {
             let ledger_sync_state = token_data.ledger_sync_state_mut();
 
             if let Some(block_index) = new_block_index_synced_up_to {
-                ledger_sync_state.set_synced_up_to(block_index);
+                ledger_sync_state.set_synced_up_to(block_index, Some(version));
             }
 
             ledger_sync_state.mark_sync_complete(success, state.env.now());

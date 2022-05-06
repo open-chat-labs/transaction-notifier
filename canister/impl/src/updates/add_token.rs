@@ -57,7 +57,7 @@ fn add_token_impl(
                 sync_from_block_index,
             ));
             if enable_sync {
-                token_data.ledger_sync_state_mut().enable();
+                token_data.ledger_sync_state_mut().set_enabled(true);
             }
             Success
         }
