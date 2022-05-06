@@ -1,6 +1,6 @@
-use crate::NotifyTransactionArgs;
 use serde::{Deserialize, Serialize};
 use std::collections::VecDeque;
+use transaction_notifier::NotifyTransactionArgs;
 use types::CanisterId;
 
 #[derive(Serialize, Deserialize, Default)]

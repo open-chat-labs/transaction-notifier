@@ -6,7 +6,7 @@ use crate::model::token_data::TokenData;
 use candid::{CandidType, Principal};
 use canister_logger::LogMessagesWrapper;
 use canister_state_macros::canister_state;
-use ic_ledger_types::{Block, BlockIndex};
+use ic_ledger_types::BlockIndex;
 use serde::{Deserialize, Serialize};
 use std::cell::RefCell;
 use std::collections::{HashMap, HashSet};
@@ -97,12 +97,4 @@ pub struct TokenMetrics {
     pub last_successful_sync: TimestampMillis,
     pub last_failed_sync: TimestampMillis,
     pub subscriptions: u64,
-}
-
-#[derive(CandidType, Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
-pub struct NotifyTransactionArgs {
-    pub token_symbol: String,
-    pub ledger_canister_id: CanisterId,
-    pub block_index: BlockIndex,
-    pub block: Block,
 }

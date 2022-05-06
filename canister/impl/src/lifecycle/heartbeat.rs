@@ -1,7 +1,7 @@
 use crate::model::ledger_sync_state::TryStartSyncResult;
 use crate::model::ledger_sync_state::Version;
 use crate::model::notifications::Notification;
-use crate::{mutate_state, NotifyTransactionArgs, State, Subscriptions};
+use crate::{mutate_state, State, Subscriptions};
 use ic_cdk::api::call::CallResult;
 use ic_cdk_macros::heartbeat;
 use ic_ledger_types::{
@@ -11,6 +11,7 @@ use ic_ledger_types::{
 use itertools::Itertools;
 use std::collections::HashSet;
 use tracing::error;
+use transaction_notifier::NotifyTransactionArgs;
 use types::CanisterId;
 
 #[heartbeat]
