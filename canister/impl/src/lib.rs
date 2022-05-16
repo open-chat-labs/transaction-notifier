@@ -43,6 +43,7 @@ impl State {
             cycles_balance: self.env.cycles_balance(),
             wasm_version: WASM_VERSION.with(|v| **v.borrow()),
             tokens: self.data.tokens.values().map(|t| t.metrics()).collect(),
+            subscriptions: self.data.subscriptions.len() as u64,
             notifications_sent: self.data.notifications.total_sent(),
             notifications_queued: self.data.notifications.queue_len().try_into().unwrap(),
             test_mode: self.data.test_mode,
@@ -55,6 +56,7 @@ struct Data {
     admins: HashSet<Principal>,
     notification_method_name: String,
     tokens: HashMap<String, TokenData>,
+    subscriptions: Subscriptions,
     notifications: Notifications,
     test_mode: bool,
 }
@@ -69,6 +71,7 @@ impl Data {
             admins,
             notification_method_name,
             tokens: HashMap::default(),
+            subscriptions: Subscriptions::default(),
             notifications: Notifications::default(),
             test_mode,
         }
@@ -82,6 +85,7 @@ pub struct Metrics {
     pub cycles_balance: Cycles,
     pub wasm_version: Version,
     pub tokens: Vec<TokenMetrics>,
+    pub subscriptions: u64,
     pub notifications_sent: u64,
     pub notifications_queued: u64,
     pub test_mode: bool,
@@ -96,5 +100,4 @@ pub struct TokenMetrics {
     pub last_sync_started_at: TimestampMillis,
     pub last_successful_sync: TimestampMillis,
     pub last_failed_sync: TimestampMillis,
-    pub subscriptions: u64,
 }

@@ -15,7 +15,6 @@ pub enum Response {
 
 #[derive(CandidType, Deserialize, Debug)]
 pub struct Subscription {
-    pub token_symbol: String,
     pub account_identifier: AccountIdentifier,
     pub canister_ids: Vec<CanisterId>,
 }

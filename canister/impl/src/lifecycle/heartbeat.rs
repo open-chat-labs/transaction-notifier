@@ -179,32 +179,27 @@ mod sync_ledger_transactions {
         from_block_index: BlockIndex,
         state: &mut State,
     ) {
-        if let Some(subscriptions) = state
-            .data
-            .tokens
-            .get(token_symbol)
-            .map(|t| t.subscriptions())
-        {
-            for (block_index, block) in blocks
-                .into_iter()
-                .enumerate()
-                .map(|(index, block)| ((index as u64) + from_block_index, block))
-            {
-                let account_identifiers = extract_account_identifiers(&block.transaction.operation);
-                let canisters_to_notify =
-                    extract_canisters_to_notify(&account_identifiers, subscriptions);
+        let subscriptions = &state.data.subscriptions;
 
-                for canister_id in canisters_to_notify {
-                    state.data.notifications.enqueue(Notification {
-                        canister_id,
-                        args: NotifyTransactionArgs {
-                            token_symbol: token_symbol.to_string(),
-                            ledger_canister_id,
-                            block_index,
-                            block: block.clone(),
-                        },
-                    })
-                }
+        for (block_index, block) in blocks
+            .into_iter()
+            .enumerate()
+            .map(|(index, block)| ((index as u64) + from_block_index, block))
+        {
+            let account_identifiers = extract_account_identifiers(&block.transaction.operation);
+            let canisters_to_notify =
+                extract_canisters_to_notify(&account_identifiers, subscriptions);
+
+            for canister_id in canisters_to_notify {
+                state.data.notifications.enqueue(Notification {
+                    canister_id,
+                    args: NotifyTransactionArgs {
+                        token_symbol: token_symbol.to_string(),
+                        ledger_canister_id,
+                        block_index,
+                        block: block.clone(),
+                    },
+                })
             }
         }
     }

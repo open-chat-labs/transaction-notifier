@@ -1,4 +1,4 @@
-use crate::{LedgerSyncState, Subscriptions, TokenMetrics};
+use crate::{LedgerSyncState, TokenMetrics};
 use ic_ledger_types::BlockIndex;
 use serde::{Deserialize, Serialize};
 use types::CanisterId;
@@ -8,7 +8,6 @@ pub struct TokenData {
     token_symbol: String,
     ledger_canister_id: CanisterId,
     ledger_sync_state: LedgerSyncState,
-    subscriptions: Subscriptions,
 }
 
 impl TokenData {
@@ -21,7 +20,6 @@ impl TokenData {
             token_symbol,
             ledger_canister_id,
             ledger_sync_state: LedgerSyncState::new(from_block_index),
-            subscriptions: Subscriptions::default(),
         }
     }
 
@@ -37,14 +35,6 @@ impl TokenData {
         &mut self.ledger_sync_state
     }
 
-    pub fn subscriptions(&self) -> &Subscriptions {
-        &self.subscriptions
-    }
-
-    pub fn subscriptions_mut(&mut self) -> &mut Subscriptions {
-        &mut self.subscriptions
-    }
-
     pub fn metrics(&self) -> TokenMetrics {
         TokenMetrics {
             token_symbol: self.token_symbol.clone(),
@@ -54,7 +44,6 @@ impl TokenData {
             last_sync_started_at: self.ledger_sync_state.last_sync_started_at(),
             last_successful_sync: self.ledger_sync_state.last_successful_sync(),
             last_failed_sync: self.ledger_sync_state.last_failed_sync(),
-            subscriptions: self.subscriptions.len().try_into().unwrap(),
         }
     }
 }
