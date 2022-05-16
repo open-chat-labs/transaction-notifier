@@ -1,0 +1,23 @@
+{
+  "canisters": {
+    "transaction_notifier": {
+      "type": "custom",
+      "candid": "canister/api/can.did",
+      "wasm": "target/wasm32-unknown-unknown/release/transaction_notifier_impl-opt.wasm",
+      "build": "./generate-wasm.sh transaction_notifier_impl"
+    }
+  },
+  "networks": {
+    "local": {
+      "bind": "127.0.0.1:8000",
+      "type": "ephemeral"
+    },
+    "ic": {
+      "providers": [
+        "https://ic0.app/"
+      ],
+      "type": "persistent"
+    }
+  },
+  "version": 1
+}

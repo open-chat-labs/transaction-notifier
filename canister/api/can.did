@@ -32,7 +32,19 @@ type Subscription =
         canister_ids: vec CanisterId;
     };
 
-service : {
+type InitArgs =
+    record {
+        admins: vec principal;
+        notification_method_name; opt text;
+        wasm_version: record {
+            major: nat32;
+            minor: nat32;
+            patch: nat32;
+        };
+        test_mode: bool;
+    };
+
+service : (InitArgs) -> {
     add_token: (AddTokenArgs) -> (AddTokenResponse);
     subscribe: (SubscribeArgs) -> (SubscribeResponse);
 }

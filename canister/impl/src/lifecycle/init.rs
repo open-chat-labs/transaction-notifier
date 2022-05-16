@@ -21,7 +21,9 @@ fn init(args: Args) {
         args.test_mode,
     );
 
-    init_state(env, data, args.wasm_version);
+    let version = args.wasm_version;
 
-    info!(version = %args.wasm_version, "Initialization complete");
+    init_state(env, data, version);
+
+    info!(%version, "Initialization complete");
 }
