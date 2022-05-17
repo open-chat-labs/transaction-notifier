@@ -66,7 +66,7 @@ fn add_token_impl(
 }
 
 async fn token_symbol(ledger_canister_id: CanisterId) -> CallResult<String> {
-    ic_ledger_types::token_symbol(ledger_canister_id)
+    ic_ledger_types::symbol(ledger_canister_id)
         .await
         .map(|res| res.symbol)
 }
