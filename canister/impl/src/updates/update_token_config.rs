@@ -17,7 +17,7 @@ fn update_token_config_impl(args: Args, state: &mut State) -> Response {
             ledger_sync_state.set_enabled(enabled);
         }
         if let Some(block_index) = args.sync_from_block_index {
-            ledger_sync_state.set_synced_up_to(block_index, None);
+            ledger_sync_state.set_next_block_to_sync(block_index, None);
             ledger_sync_state.incr_version();
         }
         Success

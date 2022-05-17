@@ -96,7 +96,7 @@ pub struct TokenMetrics {
     pub token_symbol: String,
     pub ledger_canister_id: CanisterId,
     pub sync_enabled: bool,
-    pub synced_up_to: BlockIndex,
+    pub synced_up_to: Option<BlockIndex>,
     pub last_sync_started_at: TimestampMillis,
     pub last_successful_sync: TimestampMillis,
     pub last_failed_sync: TimestampMillis,

@@ -14,12 +14,12 @@ impl TokenData {
     pub fn new(
         token_symbol: String,
         ledger_canister_id: CanisterId,
-        from_block_index: BlockIndex,
+        sync_from_block_index: BlockIndex,
     ) -> TokenData {
         TokenData {
             token_symbol,
             ledger_canister_id,
-            ledger_sync_state: LedgerSyncState::new(from_block_index),
+            ledger_sync_state: LedgerSyncState::new(sync_from_block_index),
         }
     }
 
@@ -40,7 +40,7 @@ impl TokenData {
             token_symbol: self.token_symbol.clone(),
             ledger_canister_id: self.ledger_canister_id,
             sync_enabled: self.ledger_sync_state.enabled(),
-            synced_up_to: self.ledger_sync_state.synced_up_to(),
+            synced_up_to: self.ledger_sync_state.next_block_to_sync().checked_sub(1),
             last_sync_started_at: self.ledger_sync_state.last_sync_started_at(),
             last_successful_sync: self.ledger_sync_state.last_successful_sync(),
             last_failed_sync: self.ledger_sync_state.last_failed_sync(),

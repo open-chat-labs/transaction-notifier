@@ -45,13 +45,13 @@ mod sync_ledger_transactions {
             .tokens
             .values_mut()
             .filter_map(|t| {
-                if let TryStartSyncResult::Success(block_index_synced_up_to, version) =
+                if let TryStartSyncResult::Success(from_block, version) =
                     t.ledger_sync_state_mut().try_start(now)
                 {
                     Some(TokenToSync {
                         token_symbol: t.token_symbol().to_string(),
                         ledger_canister_id: t.ledger_canister_id(),
-                        from_block: block_index_synced_up_to + 1,
+                        from_block,
                         version,
                     })
                 } else {
@@ -66,7 +66,7 @@ mod sync_ledger_transactions {
     }
 
     async fn sync_token(token_to_sync: TokenToSync) {
-        let mut new_block_index_synced_up_to = None;
+        let mut new_next_block_to_sync = None;
         let mut success = false;
 
         match blocks_since(
@@ -79,8 +79,8 @@ mod sync_ledger_transactions {
             Ok(blocks) => {
                 if !blocks.is_empty() {
                     mutate_state(|state| {
-                        new_block_index_synced_up_to =
-                            Some(token_to_sync.from_block + (blocks.len() as u64) - 1);
+                        new_next_block_to_sync =
+                            Some(token_to_sync.from_block + (blocks.len() as u64));
 
                         enqueue_notifications(
                             &token_to_sync.token_symbol,
@@ -99,7 +99,7 @@ mod sync_ledger_transactions {
         mutate_state(|state| {
             mark_sync_complete(
                 &token_to_sync.token_symbol,
-                new_block_index_synced_up_to,
+                new_next_block_to_sync,
                 success,
                 token_to_sync.version,
                 state,
@@ -156,7 +156,7 @@ mod sync_ledger_transactions {
 
     fn mark_sync_complete(
         token_symbol: &str,
-        new_block_index_synced_up_to: Option<BlockIndex>,
+        new_next_block_to_sync: Option<BlockIndex>,
         success: bool,
         version: Version,
         state: &mut State,
@@ -164,8 +164,8 @@ mod sync_ledger_transactions {
         if let Some(token_data) = state.data.tokens.get_mut(token_symbol) {
             let ledger_sync_state = token_data.ledger_sync_state_mut();
 
-            if let Some(block_index) = new_block_index_synced_up_to {
-                ledger_sync_state.set_synced_up_to(block_index, Some(version));
+            if let Some(next_block_to_sync) = new_next_block_to_sync {
+                ledger_sync_state.set_next_block_to_sync(next_block_to_sync, Some(version));
             }
 
             ledger_sync_state.mark_sync_complete(success, state.env.now());

@@ -8,7 +8,7 @@ pub type Version = u32;
 pub struct LedgerSyncState {
     enabled: bool,
     in_progress: bool,
-    synced_up_to: BlockIndex,
+    next_block_to_sync: BlockIndex,
     last_sync_started_at: TimestampMillis,
     last_successful_sync: TimestampMillis,
     last_failed_sync: TimestampMillis,
@@ -16,11 +16,11 @@ pub struct LedgerSyncState {
 }
 
 impl LedgerSyncState {
-    pub fn new(latest_block_index: BlockIndex) -> LedgerSyncState {
+    pub fn new(next_block_to_sync: BlockIndex) -> LedgerSyncState {
         LedgerSyncState {
             enabled: false,
             in_progress: false,
-            synced_up_to: latest_block_index,
+            next_block_to_sync,
             last_sync_started_at: 0,
             last_successful_sync: 0,
             last_failed_sync: 0,
@@ -42,7 +42,7 @@ impl LedgerSyncState {
         } else if !self.in_progress {
             self.in_progress = true;
             self.last_sync_started_at = now;
-            TryStartSyncResult::Success(self.synced_up_to, self.version)
+            TryStartSyncResult::Success(self.next_block_to_sync, self.version)
         } else {
             TryStartSyncResult::AlreadyInProgress
         }
@@ -58,13 +58,17 @@ impl LedgerSyncState {
         }
     }
 
-    pub fn synced_up_to(&self) -> BlockIndex {
-        self.synced_up_to
+    pub fn next_block_to_sync(&self) -> BlockIndex {
+        self.next_block_to_sync
     }
 
-    pub fn set_synced_up_to(&mut self, block_index: BlockIndex, version_check: Option<Version>) {
+    pub fn set_next_block_to_sync(
+        &mut self,
+        block_index: BlockIndex,
+        version_check: Option<Version>,
+    ) {
         if version_check.map_or(true, |v| v == self.version) {
-            self.synced_up_to = block_index;
+            self.next_block_to_sync = block_index;
         }
     }
 
