@@ -8,5 +8,5 @@ members = [
 ]
 
 [patch.crates-io]
-ic-cdk = { git = "https://github.com/hpeebles/cdk-rs", rev = "b108fb14a6f6c912fd8547a41549804638ebca8e" }
-ic-ledger-types = { git = "https://github.com/hpeebles/cdk-rs", rev = "b108fb14a6f6c912fd8547a41549804638ebca8e" }
+ic-cdk = { git = "https://github.com/hpeebles/cdk-rs", rev = "a4a17c75297ba96e2d98b8728c710b6d6c173b8d" }
+ic-ledger-types = { git = "https://github.com/hpeebles/cdk-rs", rev = "a4a17c75297ba96e2d98b8728c710b6d6c173b8d" }

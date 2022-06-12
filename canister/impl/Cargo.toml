@@ -14,15 +14,15 @@ candid = "0.7.14"
 canister_logger = { path = "../../libraries/canister_logger" }
 canister_state_macros = { git = "https://github.com/open-ic/ic-utils", rev = "9d0fd52de49ab46b9b51c2b76b9b0477e3199a4e" }
 canister_tracing_macros = { git = "https://github.com/open-ic/ic-utils", rev = "9d0fd52de49ab46b9b51c2b76b9b0477e3199a4e" }
-futures = "0.3.16"
-ic-cdk = "0.5.0"
-ic-cdk-macros = "0.5.0"
-ic-ledger-types = "0.1.1"
+futures = "0.3.21"
+ic-cdk = "0.5.1"
+ic-cdk-macros = "0.5.1"
+ic-ledger-types = "0.1.2"
 itertools = "0.10.3"
-serde = "1.0.136"
-serde_bytes = "0.11.5"
+serde = "1.0.137"
+serde_bytes = "0.11.6"
 serde_json = "1.0.81"
 stable_memory = { git = "https://github.com/open-ic/ic-utils", rev = "9d0fd52de49ab46b9b51c2b76b9b0477e3199a4e" }
-tracing = "0.1.33"
+tracing = "0.1.35"
 transaction_notifier = { path = "../api" }
 types = { path = "../../libraries/types" }

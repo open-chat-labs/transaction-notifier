@@ -2,10 +2,11 @@ use crate::model::ledger_sync_state::TryStartSyncResult;
 use crate::model::ledger_sync_state::Version;
 use crate::model::notifications::Notification;
 use crate::{mutate_state, State, Subscriptions};
+use candid::Func;
 use ic_cdk::api::call::CallResult;
 use ic_cdk_macros::heartbeat;
 use ic_ledger_types::{
-    AccountIdentifier, ArchivedBlocksRange, Block, BlockIndex, GetBlocksArgs, GetBlocksResult,
+    AccountIdentifier, ArchivedBlockRange, Block, BlockIndex, GetBlocksArgs, GetBlocksResult,
     Operation,
 };
 use itertools::Itertools;
@@ -110,7 +111,7 @@ mod sync_ledger_transactions {
     async fn blocks_since(
         ledger_canister_id: CanisterId,
         start: BlockIndex,
-        length: usize,
+        length: u64,
     ) -> CallResult<Vec<Block>> {
         let response =
             ic_ledger_types::query_blocks(ledger_canister_id, GetBlocksArgs { start, length })
@@ -120,15 +121,14 @@ mod sync_ledger_transactions {
             Ok(response.blocks)
         } else {
             async fn get_blocks_from_archive(
-                range: ArchivedBlocksRange,
+                range: ArchivedBlockRange,
             ) -> CallResult<GetBlocksResult> {
                 let args = GetBlocksArgs {
                     start: range.start,
-                    length: range.length as usize,
+                    length: range.length,
                 };
-                let (response,) =
-                    ic_cdk::call(range.callback.canister_id, &range.callback.method, (args,))
-                        .await?;
+                let func: Func = range.callback.into();
+                let (response,) = ic_cdk::call(func.principal, &func.method, (args,)).await?;
                 Ok(response)
             }
 
@@ -186,7 +186,12 @@ mod sync_ledger_transactions {
             .enumerate()
             .map(|(index, block)| ((index as u64) + from_block_index, block))
         {
-            let account_identifiers = extract_account_identifiers(&block.transaction.operation);
+            let operation = if let Some(op) = &block.transaction.operation {
+                op
+            } else {
+                continue;
+            };
+            let account_identifiers = extract_account_identifiers(operation);
             let canisters_to_notify =
                 extract_canisters_to_notify(&account_identifiers, subscriptions);
 
