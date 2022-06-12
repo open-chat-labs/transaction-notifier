@@ -1154,6 +1154,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "transaction_notifier_c2c_client"
+version = "0.1.0"
+dependencies = [
+ "candid",
+ "ic-cdk",
+ "tracing",
+ "transaction_notifier",
+]
+
+[[package]]
 name = "transaction_notifier_impl"
 version = "0.1.0"
 dependencies = [
